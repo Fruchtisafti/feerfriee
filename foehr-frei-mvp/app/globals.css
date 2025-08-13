@@ -2,18 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --brand-fg: #0f172a; }
+/* Globale Styles */
+:root { --brand-fg: #0f172a; } /* slate-900 */
 
 html, body { height: 100%; }
 
 body {
   min-height: 100vh;
+  /* statt @apply: reines CSS */
   background: linear-gradient(to bottom, #ffffff, #f8fafc);
   color: #0f172a;
 }
 
 .container {
-  max-width: 64rem; /* ~max-w-5xl */
+  /* ~ max-w-5xl */
+  max-width: 64rem;
   margin-left: auto;
   margin-right: auto;
   padding: 1.5rem 1rem; /* py-6 px-4 */
