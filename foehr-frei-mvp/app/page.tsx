@@ -16,21 +16,6 @@ function safeUUID() {
   return 'id-' + Math.random().toString(36).slice(2) + '-' + Date.now().toString(36);
 }
 
-function safeUUID() {
-  try {
-    // Browser-Variante
-    if (typeof window !== "undefined" && window.crypto && "randomUUID" in window.crypto) {
-      return window.crypto.randomUUID();
-    }
-  } catch {}
-  // Fallback
-  return "id-" + Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
-}
-
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
-
 const VILLAGES = [
   "Wyk", "Nieblum", "Utersum", "Oldsum", "Alkersum", "Borgsum", "Dunsum", "Witsum", "Oevenum", "Midlum", "Süderende"
 ];
