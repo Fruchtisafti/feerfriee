@@ -105,7 +105,8 @@ export default function Page(){
 
       {tab==='guest'
         ? <GuestSearch listings={listings} onLoadDemo={()=>loadDemo(setListings)} />
-        : <HostOnboarding addListing={(l)=>setListings(prev=>[...prev,l])} setListings={setListings} />}
+     <HostOnboarding  listings={listings}  addListing={(l) => setListings(prev => [...prev, l])}  setListings={setListings}
+/>
 
       <footer className="mt-12 text-xs text-slate-500">
         <p>Prototyp (MVP). Keine Zahlungsabwicklung. Angezeigte Verfügbarkeiten basieren auf Kalenderdaten der Vermieter.</p>
@@ -185,7 +186,12 @@ function GuestSearch({listings,onLoadDemo}:{listings:Listing[];onLoadDemo:()=>vo
   );
 }
 
-function HostOnboarding({addListing,setListings}:{addListing:(l:Listing)=>void; setListings:(fn:any)=>void}){
+function HostOnboarding({ listings, addListing, setListings }:{
+  listings: Listing[],
+  addListing:(l:Listing)=>void,
+  setListings:(fn:any)=>void
+}) {
+
   const [title,setTitle]=useState<string>(''); const [location,setLocation]=useState<string>('Wyk');
   const [persons,setPersons]=useState<number>(2); const [priceFrom,setPriceFrom]=useState<number>(0);
   const [bookingUrl,setBookingUrl]=useState<string>(''); const [icsUrl,setIcsUrl]=useState<string>('');
