@@ -1,3 +1,21 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+
+function safeUUID() {
+  try {
+    if (
+      typeof window !== 'undefined' &&
+      window.crypto &&
+      'randomUUID' in window.crypto
+    ) {
+      return window.crypto.randomUUID();
+    }
+  } catch {}
+  // Fallback
+  return 'id-' + Math.random().toString(36).slice(2) + '-' + Date.now().toString(36);
+}
+
 function safeUUID() {
   try {
     // Browser-Variante
