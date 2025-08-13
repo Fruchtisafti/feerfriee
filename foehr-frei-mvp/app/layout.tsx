@@ -1,5 +1,7 @@
+import "./globals.css";
+
 export const metadata = {
-  title: "Föhr Frei – Last‑Minute Unterkünfte",
+  title: "Föhr Frei – Last-Minute Unterkünfte",
   description: "Hyperlokale Verfügbarkeits-Suche für Föhr (MVP)",
 };
 
