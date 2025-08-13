@@ -83,33 +83,101 @@ type Listing = {
   bookingUrl:string; icsUrl?:string; bookedSet:Set<string>; windows:{start:Date;length:number}[];
 };
 
-export default function Page(){
-  const [tab,setTab]=useState<'guest'|'host'>('guest');
-  const [listings,setListings]=useState<Listing[]>([]);
-  useEffect(()=>{ const raw=localStorage.getItem('foehrfrei_listings'); if(raw){ const parsed=JSON.parse(raw);
-    const revived:Listing[]=parsed.map((l:any)=>({...l, bookedSet:new Set(l.bookedSet), windows:(l.windows||[]).map((w:any)=>({start:new Date(w.start),length:w.length}))}));
-    setListings(revived); }},[]);
-  useEffect(()=>{ const serial=listings.map(l=>({...l, bookedSet:Array.from(l.bookedSet)})); localStorage.setItem('foehrfrei_listings', JSON.stringify(serial)); },[listings]);
+export default function Page() {
+  const [tab, setTab] = useState<'guest' | 'host'>('guest');
+  const [listings, setListings] = useState<Listing[]>([]);
+
+  // Einmalig aus localStorage laden
+  useEffect(() => {
+    try {
+      const raw =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('foehrfrei_listings')
+          : null;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const revived: Listing[] = parsed.map((l: any) => ({
+          ...l,
+          bookedSet: new Set<string>(l.bookedSet),
+          windows: (l.windows || []).map((w: any) => ({
+            start: new Date(w.start),
+            length: w.length,
+          })),
+        }));
+        setListings(revived);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Persistieren
+  useEffect(() => {
+    try {
+      const serial = listings.map((l) => ({
+        ...l,
+        bookedSet: Array.from(l.bookedSet),
+      }));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('foehrfrei_listings', JSON.stringify(serial));
+      }
+    } catch {
+      // ignore
+    }
+  }, [listings]);
 
   return (
     <div className="container">
       <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Föhr Frei <span className="text-slate-500">– Last-Minute Unterkünfte</span></h1>
-        <button onClick={()=>loadDemo(setListings)} className="text-sm px-3 py-2 rounded border hover:bg-slate-50">Demo laden</button>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+          Föhr Frei{' '}
+          <span className="text-slate-500">– Last-Minute Unterkünfte</span>
+        </h1>
+        <button
+          onClick={() => loadDemo(setListings)}
+          className="text-sm px-3 py-2 rounded border hover:bg-slate-50"
+        >
+          Demo laden
+        </button>
       </header>
 
       <div className="mb-4 flex gap-2">
-        <button className={`px-3 py-2 rounded border ${tab==='guest'?'bg-slate-900 text-white':'bg-white'}`} onClick={()=>setTab('guest')}>Für Gäste</button>
-        <button className={`px-3 py-2 rounded border ${tab==='host'?'bg-slate-900 text-white':'bg-white'}`} onClick={()=>setTab('host')}>Für Vermieter</button>
+        <button
+          className={`px-3 py-2 rounded border ${
+            tab === 'guest' ? 'bg-slate-900 text-white' : 'bg-white'
+          }`}
+          onClick={() => setTab('guest')}
+        >
+          Für Gäste
+        </button>
+        <button
+          className={`px-3 py-2 rounded border ${
+            tab === 'host' ? 'bg-slate-900 text-white' : 'bg-white'
+          }`}
+          onClick={() => setTab('host')}
+        >
+          Für Vermieter
+        </button>
       </div>
 
-      {tab==='guest'
-        ? <GuestSearch listings={listings} onLoadDemo={()=>loadDemo(setListings)} />
-     <HostOnboarding  listings={listings}  addListing={(l) => setListings(prev => [...prev, l])}  setListings={setListings}
-/>
+      {tab === 'guest' ? (
+        <GuestSearch
+          listings={listings}
+          onLoadDemo={() => loadDemo(setListings)}
+        />
+      ) : (
+        <HostOnboarding
+          listings={listings}
+          addListing={(l) => setListings((prev) => [...prev, l])}
+          setListings={setListings}
+        />
+      )}
 
       <footer className="mt-12 text-xs text-slate-500">
-        <p>Prototyp (MVP). Keine Zahlungsabwicklung. Angezeigte Verfügbarkeiten basieren auf Kalenderdaten der Vermieter.</p>
+        <p>
+          Prototyp (MVP). Keine Zahlungsabwicklung. Angezeigte Verfügbarkeiten
+          basieren auf Kalenderdaten der Vermieter.
+        </p>
       </footer>
     </div>
   );
