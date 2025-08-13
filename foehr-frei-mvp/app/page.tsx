@@ -4,15 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 
 function safeUUID() {
   try {
-    if (
-      typeof window !== 'undefined' &&
-      window.crypto &&
-      'randomUUID' in window.crypto
-    ) {
+    if (typeof window !== 'undefined' && window.crypto && 'randomUUID' in window.crypto) {
       return window.crypto.randomUUID();
     }
   } catch {}
-  // Fallback
   return 'id-' + Math.random().toString(36).slice(2) + '-' + Date.now().toString(36);
 }
 
@@ -383,7 +378,7 @@ function HostOnboarding({ addListing, setListings }:{ addListing:(l:Listing)=>vo
       setError("Titel, Buchungslink und Kalender sind erforderlich.");
       return;
     }
-    const id = crypto.randomUUID();
+    const id = safeUUID();
     const payload: Listing = { id, title, location, persons, priceFrom, bookingUrl, icsUrl: icsUrl || undefined, bookedSet: bookedSet!, windows };
     addListing(payload);
     setTitle("");
@@ -548,7 +543,7 @@ function loadDemo(setListings:(l:Listing[])=>void) {
 
   const demoListings: Listing[] = [
     {
-      id: crypto.randomUUID(),
+      id: safeUUID(),
       title: "Strandnahes Apartment – Südstrand",
       location: "Wyk",
       persons: 3,
@@ -558,7 +553,7 @@ function loadDemo(setListings:(l:Listing[])=>void) {
       windows: l1Windows,
     },
     {
-      id: crypto.randomUUID(),
+      id: safeUUID(),
       title: "Reetdach-Häuschen – Ruhig & gemütlich",
       location: "Nieblum",
       persons: 4,
