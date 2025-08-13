@@ -1,5 +1,6 @@
-'use client';
 
+'use client';
+import Logo from "../components/Logo";
 import { useEffect, useMemo, useState } from 'react';
 
 function safeUUID() {
@@ -87,13 +88,10 @@ export default function Page() {
   const [tab, setTab] = useState<'guest' | 'host'>('guest');
   const [listings, setListings] = useState<Listing[]>([]);
 
-  // Einmalig aus localStorage laden
   useEffect(() => {
     try {
       const raw =
-        typeof window !== 'undefined'
-          ? localStorage.getItem('foehrfrei_listings')
-          : null;
+        typeof window !== 'undefined' ? localStorage.getItem('foehrfrei_listings') : null;
       if (raw) {
         const parsed = JSON.parse(raw);
         const revived: Listing[] = parsed.map((l: any) => ({
@@ -106,33 +104,22 @@ export default function Page() {
         }));
         setListings(revived);
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, []);
 
-  // Persistieren
   useEffect(() => {
     try {
-      const serial = listings.map((l) => ({
-        ...l,
-        bookedSet: Array.from(l.bookedSet),
-      }));
+      const serial = listings.map(l => ({ ...l, bookedSet: Array.from(l.bookedSet) }));
       if (typeof window !== 'undefined') {
         localStorage.setItem('foehrfrei_listings', JSON.stringify(serial));
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [listings]);
 
   return (
     <div className="container">
       <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-          Föhr Frei{' '}
-          <span className="text-slate-500">– Last-Minute Unterkünfte</span>
-        </h1>
+        <Logo className="text-2xl md:text-3xl" />
         <button
           onClick={() => loadDemo(setListings)}
           className="text-sm px-3 py-2 rounded border hover:bg-slate-50"
@@ -141,6 +128,7 @@ export default function Page() {
         </button>
       </header>
 
+      {/* TAB-BUTTONS – hier drin behalten */}
       <div className="mb-4 flex gap-2">
         <button
           className={`px-3 py-2 rounded border ${
@@ -168,7 +156,7 @@ export default function Page() {
       ) : (
         <HostOnboarding
           listings={listings}
-          addListing={(l) => setListings((prev) => [...prev, l])}
+          addListing={l => setListings(prev => [...prev, l])}
           setListings={setListings}
         />
       )}
@@ -182,6 +170,7 @@ export default function Page() {
     </div>
   );
 }
+
 
 function GuestSearch({listings,onLoadDemo}:{listings:Listing[];onLoadDemo:()=>void}){
   const [start,setStart]=useState<string>(fmtYMD(todayAtMidnight()));
