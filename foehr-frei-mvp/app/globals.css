@@ -2,17 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Globale Styles */
 :root {
-  --bg: 255 255 255;
+  --brand-fg: #0f172a;   /* slate-900 */
 }
 
-html, body {
-  height: 100%;
-  background: rgb(var(--bg));
+html, body { height: 100%; }
+
+body {
+  /* Tailwind-Utilities korrekt via @apply verwenden */
+  @apply min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900;
 }
 
+/* Container wie bisher in JSX verwendet */
 .container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 1rem;
+  @apply max-w-5xl mx-auto px-4 py-6;
 }
+
+/* Box-Sizing */
+* { box-sizing: border-box; }
