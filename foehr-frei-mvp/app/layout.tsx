@@ -2,8 +2,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-// Wenn dein Pfad-Alias "@" noch nicht geht, nutze: import Logo from '../components/Logo';
 import Logo from '@/components/Logo';
+import ConsentBanner from '@/components/ConsentBanner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,7 +24,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="de">
       <body className={`${inter.className} min-h-screen bg-gradient-to-b from-cloud to-white text-navy`}>
         <header className="container mx-auto max-w-6xl px-4 py-6">
-          {/* Logo gehört INS Layout, aber NICHT top-level außerhalb der Komponente */}
           <h1 className="mb-0">
             <Logo />
           </h1>
@@ -35,10 +34,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
 
         <footer className="mt-12 text-xs text-navy/60 border-t">
-          <div className="container mx-auto max-w-6xl px-4 py-6">
-            © {new Date().getFullYear()} Föhr Frei · Prototyp (MVP)
+          <div className="container mx-auto max-w-6xl px-4 py-6 flex gap-4 flex-wrap">
+            <span>© {new Date().getFullYear()} Föhr Frei · Prototyp (MVP)</span>
+            <a className="underline" href="/impressum">Impressum</a>
+            <a className="underline" href="/datenschutz">Datenschutz</a>
           </div>
         </footer>
+
+        {/* Consent-Banner muss innerhalb des Body gerendert werden */}
+        <ConsentBanner />
       </body>
     </html>
   );
