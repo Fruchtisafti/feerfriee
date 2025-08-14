@@ -28,31 +28,13 @@ export default function Page() {
   }, []);
 
   const listings: Listing[] = [
-    {
-      id: 1,
-      title: 'Nordseeperle',
-      location: 'Wyk auf Föhr',
-      price: 120,
-      available: true,
-      image: 'https://source.unsplash.com/400x300/?beach,house',
-    },
-    {
-      id: 2,
-      title: 'Dünenblick',
-      location: 'Nieblum',
-      price: 95,
-      available: false,
-      image: 'https://source.unsplash.com/400x300/?coast,home',
-    },
-    {
-      id: 3,
-      title: 'Inseltraum',
-      location: 'Utersum',
-      price: 150,
-      available: true,
-      image: 'https://source.unsplash.com/400x300/?sea,house',
-    },
-  ];
+  { id: 1, title: 'Nordseeperle', location: 'Wyk auf Föhr', price: 120, available: true,
+    image: 'https://picsum.photos/seed/foehr1/800/600' },
+  { id: 2, title: 'Dünenblick', location: 'Nieblum', price: 95, available: false,
+    image: 'https://picsum.photos/seed/foehr2/800/600' },
+  { id: 3, title: 'Inseltraum', location: 'Utersum', price: 150, available: true,
+    image: 'https://picsum.photos/seed/foehr3/800/600' },
+];
 
   const filtered = listings.filter(
     (l) =>
