@@ -123,3 +123,90 @@ export default function Home() {
     </main>
   );
 }
+// ... oberer Teil deiner Datei bleibt gleich
+
+export default function Page() {
+  const [tab, setTab] = useState<'guest' | 'host'>('guest');
+  const [listings, setListings] = useState<Listing[]>([]);
+
+  // Beim Laden Hash auswerten und auf Änderungen reagieren
+  useEffect(() => {
+    const applyHash = () => {
+      const h = typeof window !== 'undefined' ? window.location.hash : '';
+      if (h === '#vermieter') setTab('host');
+      else if (h === '#gaeste') setTab('guest');
+    };
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+    return () => window.removeEventListener('hashchange', applyHash);
+  }, []);
+
+  // ... dein localStorage-Laden + -Speichern bleibt wie gehabt
+
+  return (
+    <div className="container mx-auto max-w-5xl px-4">
+      <header className="mb-6 flex items-center justify-between">
+        <Logo className="text-2xl md:text-3xl" />
+        <button
+          onClick={() => loadDemo(setListings)}
+          className="text-sm px-3 py-2 rounded border hover:bg-slate-50"
+        >
+          Demo laden
+        </button>
+      </header>
+
+      {/* TAB-BUTTONS */}
+      <div className="mb-4 flex gap-2">
+        <button
+          className={`px-3 py-2 rounded border ${
+            tab === 'guest' ? 'bg-slate-900 text-white' : 'bg-white'
+          }`}
+          onClick={() => {
+            setTab('guest');
+            if (typeof window !== 'undefined') {
+              window.history.replaceState(null, '', '#gaeste');
+            }
+          }}
+        >
+          Für Gäste
+        </button>
+        <button
+          className={`px-3 py-2 rounded border ${
+            tab === 'host' ? 'bg-slate-900 text-white' : 'bg-white'
+          }`}
+          onClick={() => {
+            setTab('host');
+            if (typeof window !== 'undefined') {
+              window.history.replaceState(null, '', '#vermieter');
+            }
+          }}
+        >
+          Für Vermieter
+        </button>
+      </div>
+
+      {tab === 'guest' ? (
+        <GuestSearch
+          listings={listings}
+          onLoadDemo={() => loadDemo(setListings)}
+        />
+      ) : (
+        // id, damit /#vermieter auch scrollt (falls gebraucht)
+        <div id="vermieter">
+          <HostOnboarding
+            listings={listings}
+            addListing={(l) => setListings((prev) => [...prev, l])}
+            setListings={setListings}
+          />
+        </div>
+      )}
+
+      <footer className="mt-12 text-xs text-slate-500">
+        <p>
+          Prototyp (MVP). Keine Zahlungsabwicklung. Angezeigte Verfügbarkeiten
+          basieren auf Kalenderdaten der Vermieter.
+        </p>
+      </footer>
+    </div>
+  );
+}
