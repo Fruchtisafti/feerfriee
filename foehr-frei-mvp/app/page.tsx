@@ -2,63 +2,54 @@
 
 import { useState } from "react";
 
-export default function HomePage() {
-  const [startdatum, setStartdatum] = useState("");
-  const [naechte, setNaechte] = useState(3);
-  const [personen, setPersonen] = useState(2);
-  const [preis, setPreis] = useState(0);
-  const [ort, setOrt] = useState("Alle Orte");
+export default function Home() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [results, setResults] = useState<string[]>([]);
+
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    // Beispiel-Daten – später durch echte API oder Datenbank ersetzen
+    const data = ["Strand", "Fahrradverleih", "Café", "Museum", "Restaurant"];
+    const filtered = data.filter((item) =>
+      item.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setResults(filtered);
+  };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-north">Unterkünfte suchen</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <main className="flex flex-col items-center justify-center min-h-screen bg-sand p-4">
+      <h1 className="text-3xl font-bold text-navy mb-6">Feerfriee Suche</h1>
+
+      <form onSubmit={handleSearch} className="w-full max-w-md flex">
         <input
-          type="date"
-          value={startdatum}
-          onChange={(e) => setStartdatum(e.target.value)}
-          className="border rounded-xl p-2 w-full"
+          type="text"
+          placeholder="Suche nach Orten oder Services..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none"
         />
-        <input
-          type="number"
-          value={naechte}
-          onChange={(e) => setNaechte(parseInt(e.target.value))}
-          className="border rounded-xl p-2 w-full"
-          placeholder="Nächte"
-        />
-        <input
-          type="number"
-          value={personen}
-          onChange={(e) => setPersonen(parseInt(e.target.value))}
-          className="border rounded-xl p-2 w-full"
-          placeholder="Personen"
-        />
-        <input
-          type="number"
-          value={preis}
-          onChange={(e) => setPreis(parseInt(e.target.value))}
-          className="border rounded-xl p-2 w-full"
-          placeholder="Preis bis (0 = egal)"
-        />
-        <select
-          value={ort}
-          onChange={(e) => setOrt(e.target.value)}
-          className="border rounded-xl p-2 w-full"
+        <button
+          type="submit"
+          className="bg-north text-white px-4 py-2 rounded-r-lg hover:bg-blue-700"
         >
-          <option>Alle Orte</option>
-          <option>Wyk</option>
-          <option>Nieblum</option>
-        </select>
-      </div>
+          Suchen
+        </button>
+      </form>
 
-      <button className="bg-sea hover:bg-coral text-white font-bold py-2 px-6 rounded-xl shadow-soft transition">
-        Demo laden
-      </button>
-
-      <div className="mt-6 text-lg font-semibold text-navy">
-        0 Unterkünfte gefunden
-      </div>
-    </div>
+      <ul className="mt-6 w-full max-w-md">
+        {results.length > 0 ? (
+          results.map((item, index) => (
+            <li
+              key={index}
+              className="bg-white shadow-soft rounded-xl2 p-3 mb-2 text-navy"
+            >
+              {item}
+            </li>
+          ))
+        ) : (
+          <p className="text-gray-500 mt-4">Keine Ergebnisse</p>
+        )}
+      </ul>
+    </main>
   );
 }
