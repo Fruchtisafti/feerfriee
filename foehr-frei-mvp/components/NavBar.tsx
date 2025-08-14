@@ -1,25 +1,25 @@
-// components/NavBar.tsx
-"use client";
-
 import Link from "next/link";
-import Logo from "./Logo";
 
 export default function NavBar() {
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-sm bg-white/70 border-b">
+    <header className="border-b bg-white/70 backdrop-blur">
       <div className="container mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Logo className="h-6 w-auto" />
-          <span className="sr-only">Föhr Frei</span>
+          {/* kleines Inline-Logo, kannst du später ersetzen */}
+          <span className="inline-block w-6 h-6 rounded bg-north" />
+          <span className="font-semibold">Föhr Frei</span>
         </Link>
 
-        <nav className="flex items-center gap-3">
-          <Link href="/" className="text-sm text-navy/80 hover:text-navy">Suche</Link>
+        <nav className="flex items-center gap-4 text-sm">
+          <Link href="#gast" className="hover:underline">Für Gäste</Link>
+          <Link href="#vermieter" className="hover:underline">Für Vermieter</Link>
           <a
-            href="mailto:hallo@deine-domain.tld"
-            className="text-sm rounded-lg px-3 py-1.5 bg-north text-white hover:opacity-90 shadow-soft"
+            href="https://github.com/Fruchtisafti/feerfriee"
+            target="_blank"
+            rel="noreferrer"
+            className="text-navy/70 hover:text-navy"
           >
-            Vermieter werden
+            GitHub
           </a>
         </nav>
       </div>
