@@ -1,0 +1,8 @@
+<img
+  src={l.image}
+  alt={l.title}
+  className="w-full h-40 object-cover"
+  loading="lazy"
+  referrerPolicy="no-referrer"
+  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/fallback.jpg'; }}
+/>
