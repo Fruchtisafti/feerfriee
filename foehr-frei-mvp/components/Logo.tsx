@@ -1,19 +1,21 @@
 // components/Logo.tsx
-export default function Logo({ className = "" }: { className?: string }) {
+type Props = { className?: string };
+
+export default function Logo({ className }: Props) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
-        <defs>
-          <linearGradient id="g2" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stopColor="#2563EB"/>
-            <stop offset="1" stopColor="#059669"/>
-          </linearGradient>
-        </defs>
-        <rect width="64" height="64" rx="12" fill="url(#g2)"/>
-        <path d="M10 40c8 0 8-8 16-8s8 8 16 8 8-8 16-8" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round"/>
-        <circle cx="20" cy="22" r="4" fill="#fff"/>
+    <div className={`flex items-center gap-2 ${className || ''}`}>
+      {/* Icon: Kreis (north) + Welle (sea) */}
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="16" fill="#2563EB" /> {/* north */}
+        <path d="M4 18c3 0 5-3 8-3s5 3 8 3 5-3 8-3v6H4z" fill="#059669" /> {/* sea */}
+        <path d="M10 11h12v2H10z" fill="white" opacity=".9" /> {/* kleine Linie */}
       </svg>
-      <span className="font-semibold tracking-tight">Föhr Frei</span>
+
+      {/* Wortmarke */}
+      <div className="leading-tight">
+        <div className="text-navy font-bold">Föhr <span className="text-north">Frei</span></div>
+        <div className="text-xs text-navy/60">Last‑Minute Unterkünfte</div>
+      </div>
     </div>
   );
 }
