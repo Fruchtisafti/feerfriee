@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Logo from '@/components/Logo';
 import ConsentBanner from '@/components/ConsentBanner';
+import Analytics from '@/components/Analytics';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,9 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="de">
       <body className={`${inter.className} min-h-screen bg-gradient-to-b from-cloud to-white text-navy`}>
         <header className="container mx-auto max-w-6xl px-4 py-6">
-          <h1 className="mb-0">
-            <Logo />
-          </h1>
+          <h1 className="mb-0"><Logo /></h1>
         </header>
 
         <main className="container mx-auto max-w-6xl px-4 py-6">
@@ -34,15 +33,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
 
         <footer className="mt-12 text-xs text-navy/60 border-t">
-  <div className="container mx-auto max-w-6xl px-4 py-6 flex gap-4 flex-wrap">
-    <span>© {new Date().getFullYear()} Föhr Frei · Prototyp (MVP)</span>
- <a className="underline" href="/datenschutz">Datenschutz</a>
-    <a className="underline" href="/impressum">Impressum</a>
-   
-  </div>
-</footer>
+          <div className="container mx-auto max-w-6xl px-4 py-6 flex flex-wrap gap-4">
+            <span>© {new Date().getFullYear()} Föhr Frei · Prototyp (MVP)</span>
+            <a className="underline" href="/impressum">Impressum</a>
+            <a className="underline" href="/datenschutz">Datenschutz</a>
+          </div>
+        </footer>
 
-        {/* Consent-Banner muss innerhalb des Body gerendert werden */}
+        {/* Nur laden, wenn zugestimmt wurde */}
+        <Analytics />
+        {/* Banner zeigt sich nur, wenn noch keine Entscheidung gespeichert ist */}
         <ConsentBanner />
       </body>
     </html>
