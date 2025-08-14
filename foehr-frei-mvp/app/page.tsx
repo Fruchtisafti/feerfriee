@@ -27,14 +27,15 @@ export default function Page() {
     return () => window.removeEventListener('hashchange', applyHash);
   }, []);
 
+  // Demo-Daten
   const listings: Listing[] = [
-  { id: 1, title: 'Nordseeperle', location: 'Wyk auf Föhr', price: 120, available: true,
-    image: 'https://picsum.photos/seed/foehr1/800/600' },
-  { id: 2, title: 'Dünenblick', location: 'Nieblum', price: 95, available: false,
-    image: 'https://picsum.photos/seed/foehr2/800/600' },
-  { id: 3, title: 'Inseltraum', location: 'Utersum', price: 150, available: true,
-    image: 'https://picsum.photos/seed/foehr3/800/600' },
-];
+    { id: 1, title: 'Nordseeperle', location: 'Wyk auf Föhr', price: 120, available: true,
+      image: 'https://picsum.photos/seed/foehr1/800/600' },
+    { id: 2, title: 'Dünenblick', location: 'Nieblum', price: 95, available: false,
+      image: 'https://picsum.photos/seed/foehr2/800/600' },
+    { id: 3, title: 'Inseltraum', location: 'Utersum', price: 150, available: true,
+      image: 'https://picsum.photos/seed/foehr3/800/600' },
+  ];
 
   const filtered = listings.filter(
     (l) =>
@@ -50,30 +51,35 @@ export default function Page() {
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <button
-            className={`px-3 py-2 rounded border transition ${
-              tab === 'guest'
-                ? 'bg-north text-white shadow-soft'
-                : 'bg-cloud text-navy hover:bg-white'
+            type="button"
+            aria-pressed={tab === 'guest'}
+            className={`px-3 py-2 rounded-lg border transition shadow-soft ${
+              tab === 'guest' ? 'bg-north text-white' : 'bg-cloud text-navy hover:bg-white'
             }`}
             onClick={() => {
               setTab('guest');
               if (typeof window !== 'undefined') {
                 window.history.replaceState(null, '', '#gaeste');
+                // optional smooth scroll:
+                // document.getElementById('gaeste')?.scrollIntoView({ behavior: 'smooth' });
               }
             }}
           >
             Für Gäste
           </button>
+
           <button
-            className={`px-3 py-2 rounded border transition ${
-              tab === 'host'
-                ? 'bg-north text-white shadow-soft'
-                : 'bg-cloud text-navy hover:bg-white'
+            type="button"
+            aria-pressed={tab === 'host'}
+            className={`px-3 py-2 rounded-lg border transition shadow-soft ${
+              tab === 'host' ? 'bg-north text-white' : 'bg-cloud text-navy hover:bg-white'
             }`}
             onClick={() => {
               setTab('host');
               if (typeof window !== 'undefined') {
                 window.history.replaceState(null, '', '#vermieter');
+                // optional smooth scroll:
+                // document.getElementById('vermieter')?.scrollIntoView({ behavior: 'smooth' });
               }
             }}
           >
@@ -82,7 +88,7 @@ export default function Page() {
         </div>
 
         {tab === 'guest' ? (
-          <>
+          <section id="gaeste">
             {/* Search */}
             <div className="flex gap-2 mb-6">
               <input
@@ -130,9 +136,8 @@ export default function Page() {
                 </div>
               ))}
             </div>
-          </>
+          </section>
         ) : (
-          // Vermieter-Ansicht (Platzhalter)
           <section id="vermieter" className="rounded-xl border bg-white p-6 shadow-soft">
             <h2 className="text-xl font-semibold text-navy mb-2">Für Vermieter</h2>
             <p className="text-navy/70 mb-4">
