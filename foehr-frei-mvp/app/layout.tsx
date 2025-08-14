@@ -34,12 +34,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
 
         <footer className="mt-12 text-xs text-navy/60 border-t">
-          <div className="container mx-auto max-w-6xl px-4 py-6 flex gap-4 flex-wrap">
-            <span>© {new Date().getFullYear()} Föhr Frei · Prototyp (MVP)</span>
-            <a className="underline" href="/impressum">Impressum</a>
-            <a className="underline" href="/datenschutz">Datenschutz</a>
-          </div>
-        </footer>
+  <div className="container mx-auto max-w-6xl px-4 py-6 flex gap-4 flex-wrap">
+    <span>© {new Date().getFullYear()} Föhr Frei · Prototyp (MVP)</span>
+    <a className="underline" href="/impressum">Impressum</a>
+    <a className="underline" href="/datenschutz">Datenschutz</a>
+  </div>
+</footer>
 
         {/* Consent-Banner muss innerhalb des Body gerendert werden */}
         <ConsentBanner />
