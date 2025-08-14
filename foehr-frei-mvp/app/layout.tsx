@@ -1,9 +1,5 @@
+// foehr-frei-mvp/app/layout.tsx
 import './styles.css';
-
-export const metadata = {
-  title: "Föhr Frei – Last-Minute Unterkünfte",
-  description: "Hyperlokale Verfügbarkeits-Suche für Föhr (MVP)",
-};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
