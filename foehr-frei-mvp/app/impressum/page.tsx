@@ -1,31 +1,36 @@
 // app/impressum/page.tsx
-export const metadata = {
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
   title: 'Impressum – Föhr Frei',
+  description: 'Impressumsangaben für Föhr Frei.',
 };
 
 export default function ImpressumPage() {
   return (
-    <main className="min-h-[60vh] bg-cloud px-4 py-8">
-      <div className="mx-auto max-w-3xl bg-white p-6 rounded-xl border shadow-soft">
-        <h1 className="text-2xl font-semibold text-navy mb-4">Impressum</h1>
+    <main className="prose prose-slate max-w-3xl">
+      <h1>Impressum</h1>
+      <p>
+        Angaben gemäß § 5 TMG<br/>
+        Föhr Frei (MVP)<br/>
+        Musterstraße 1<br/>
+        25938 Wyk auf Föhr
+      </p>
 
-        {/* TODO: Ersetze die Platzhalter unten mit deinen echten Daten */}
-        <section className="space-y-1 text-navy/90">
-          <p><strong>Anbieter:</strong> [Vorname Nachname / Firma]</p>
-          <p><strong>Adresse:</strong> [Straße Hausnummer], [PLZ] [Ort], [Land]</p>
-          <p><strong>Kontakt:</strong> E-Mail: [deine@mail.de], Telefon: [optional]</p>
-          <p><strong>Vertretungsberechtigt:</strong> [falls Firma]</p>
-          <p><strong>USt-IdNr.:</strong> [falls vorhanden]</p>
-        </section>
+      <h2>Kontakt</h2>
+      <p>
+        E-Mail: info@example.com
+      </p>
 
-        <hr className="my-6"/>
+      <h2>Haftungsausschluss</h2>
+      <p>
+        Inhalte ohne Gewähr. Für externe Links wird keine Haftung übernommen; 
+        für den Inhalt der verlinkten Seiten sind ausschließlich deren Betreiber verantwortlich.
+      </p>
 
-        <section className="space-y-2 text-navy/80 text-sm">
-          <p><strong>Inhaltlich Verantwortlicher</strong> gem. § 55 Abs. 2 RStV: [Name, Anschrift]</p>
-          <p>EU-Streitschlichtung: <a className="underline" href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noreferrer">ec.europa.eu/consumers/odr</a></p>
-          <p>Haftung für Inhalte/Links: Trotz sorgfältiger inhaltlicher Kontrolle übernehmen wir keine Haftung für externe Links. Für den Inhalt verlinkter Seiten sind ausschließlich deren Betreiber verantwortlich.</p>
-        </section>
-      </div>
+      <p className="text-sm text-slate-500">
+        Hinweis: Prototyp (MVP). Ersetzt keine Rechtsberatung.
+      </p>
     </main>
   );
 }
