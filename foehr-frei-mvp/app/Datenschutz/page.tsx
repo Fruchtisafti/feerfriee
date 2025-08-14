@@ -12,9 +12,7 @@ export default function DatenschutzPage() {
       <p className="mb-4">
         Dies ist ein Prototyp (MVP). Hier stehen die Hinweise zum Datenschutz.
       </p>
-      <p className="text-sm text-slate-500">
-        Kontakt: info@example.com
-      </p>
+      <p className="text-sm text-slate-500">Kontakt: info@example.com</p>
     </main>
   );
 }
