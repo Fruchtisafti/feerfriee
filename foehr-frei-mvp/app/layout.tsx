@@ -1,3 +1,7 @@
+import Logo from '@/components/Logo';
+...
+<h1 className="mb-8"><Logo /></h1>
+
 // app/layout.tsx
 import "./globals.css";
 import NavBar from "@/components/NavBar";
