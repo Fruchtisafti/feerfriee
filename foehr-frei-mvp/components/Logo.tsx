@@ -1,20 +1,26 @@
 // components/Logo.tsx
 type Props = { className?: string };
 
-export default function Logo({ className }: Props) {
+export default function Logo({ className = "" }: Props) {
   return (
-    <div className={`flex items-center gap-2 ${className || ''}`}>
-      {/* Icon: Kreis (north) + Welle (sea) */}
-      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
-        <circle cx="16" cy="16" r="16" fill="#2563EB" /> {/* north */}
-        <path d="M4 18c3 0 5-3 8-3s5 3 8 3 5-3 8-3v6H4z" fill="#059669" /> {/* sea */}
-        <path d="M10 11h12v2H10z" fill="white" opacity=".9" /> {/* kleine Linie */}
+    <div className={`flex items-center gap-2 ${className}`}>
+      {/* Icon */}
+      <svg width="28" height="28" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="ff-grad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#2563EB" />
+            <stop offset="100%" stopColor="#059669" />
+          </linearGradient>
+        </defs>
+        <circle cx="24" cy="24" r="22" fill="url(#ff-grad)" />
+        {/* kleine Welle */}
+        <path d="M10 30c4 3 8 3 12 0s8-3 12 0" stroke="#F8FAFC" strokeWidth="3" fill="none" strokeLinecap="round"/>
       </svg>
 
-      {/* Wortmarke */}
-      <div className="leading-tight">
-        <div className="text-navy font-bold">Föhr <span className="text-north">Frei</span></div>
-        <div className="text-xs text-navy/60">Last‑Minute Unterkünfte</div>
+      {/* Wordmark – zwei Farben, kein currentColor */}
+      <div className="leading-none">
+        <div className="text-[18px] font-extrabold" style={{color:"#0F172A"}}>Föhr Frei</div>
+        <div className="text-[12px] font-medium" style={{color:"#2563EB"}}>Last‑Minute Unterkünfte</div>
       </div>
     </div>
   );
