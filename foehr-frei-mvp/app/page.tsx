@@ -16,6 +16,9 @@ type Listing = {
 function HostICSBox() {
   const [icsUrl, setIcsUrl] = useState('');
   const [icsText, setIcsText] = useState('');
+  const [horizonDays, setHorizonDays] = useState(30);
+  const [minNights, setMinNights] = useState(3);
+
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<null | {
     bookedDays: string[];
@@ -24,6 +27,15 @@ function HostICSBox() {
     countEvents: number;
   }>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // gemerkte Eingaben (kleiner UX-Bonus)
+  useEffect(() => {
+    const u = localStorage.getItem('ff_ics_url');
+    if (u) setIcsUrl(u);
+  }, []);
+  useEffect(() => {
+    if (icsUrl) localStorage.setItem('ff_ics_url', icsUrl);
+  }, [icsUrl]);
 
   async function handleCheck() {
     setLoading(true);
@@ -36,7 +48,7 @@ function HostICSBox() {
         body: JSON.stringify({
           icsUrl: icsUrl || undefined,
           icsText: icsText || undefined,
-          horizonDays: 30,
+          horizonDays, // Backend kennt das bereits
         }),
       });
       const data = await res.json();
@@ -48,6 +60,97 @@ function HostICSBox() {
       setLoading(false);
     }
   }
+
+  // Client‑seitig nach Mindestnächten filtern
+  const filteredWindows =
+    result?.windows?.filter((w) => w.length >= minNights) ?? [];
+
+  return (
+    <div className="mt-6 space-y-3 rounded-lg border p-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium text-navy/80">Kalender‑URL (ICS)</label>
+          <input
+            className="w-full rounded border px-3 py-2"
+            placeholder="https://…/calendar.ics"
+            value={icsUrl}
+            onChange={(e) => setIcsUrl(e.target.value)}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-navy/80">Zeithorizont (Tage)</label>
+            <input
+              type="number"
+              min={7}
+              max={365}
+              className="w-full rounded border px-3 py-2"
+              value={horizonDays}
+              onChange={(e) => setHorizonDays(Math.max(7, Math.min(365, Number(e.target.value) || 0)))}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-navy/80">Mindestnächte</label>
+            <input
+              type="number"
+              min={1}
+              max={30}
+              className="w-full rounded border px-3 py-2"
+              value={minNights}
+              onChange={(e) => setMinNights(Math.max(1, Math.min(30, Number(e.target.value) || 0)))}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="text-sm text-navy/60">oder ICS‑Inhalt einfügen:</div>
+      <textarea
+        rows={6}
+        className="w-full rounded border px-3 py-2"
+        placeholder="BEGIN:VCALENDAR…"
+        value={icsText}
+        onChange={(e) => setIcsText(e.target.value)}
+      />
+
+      <button
+        onClick={handleCheck}
+        disabled={loading || (!icsUrl && !icsText)}
+        className="rounded bg-north px-4 py-2 font-medium text-white disabled:opacity-50"
+      >
+        {loading ? 'Prüfe…' : 'Verfügbarkeit prüfen'}
+      </button>
+
+      {error && <p className="text-sm text-coral">{error}</p>}
+
+      {result && (
+        <div className="mt-3 text-sm">
+          <p className="mb-1 text-navy/80">
+            {result.countEvents} Events gefunden · Horizont: {result.horizonDays} Tage
+          </p>
+          <p className="mb-2">
+            <span className="font-medium">Belegte Tage:</span>{' '}
+            {result.bookedDays.length > 0 ? result.bookedDays.join(', ') : 'keine'}
+          </p>
+
+          <div className="mt-4">
+            <div className="mb-1 font-medium">Freie Fenster (≥ {minNights} Nächte):</div>
+            <ul className="list-disc pl-5">
+              {filteredWindows.map((w, i) => (
+                <li key={i}>
+                  ab <strong>{w.start}</strong> für <strong>{w.length}</strong> Nächte
+                </li>
+              ))}
+              {filteredWindows.length === 0 && (
+                <li>keine freien Fenster im gewählten Horizont</li>
+              )}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
   return (
     <div className="mt-6 space-y-3 rounded-lg border p-4">
