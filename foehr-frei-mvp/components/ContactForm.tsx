@@ -3,88 +3,128 @@
 import { useState } from 'react';
 
 export default function ContactForm() {
-  const [status, setStatus] = useState<'idle'|'sending'|'ok'|'error'>('idle');
-  const [form, setForm] = useState({ name: '', email: '', message: '', company: '' }); // company = Honeypot
+  const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
+  const [website, setWebsite] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  // Honeypot (hidden)
+  const [hp, setHp] = useState('');
 
-  async function onSubmit(e: React.FormEvent) {
+  const [loading, setLoading] = useState(false);
+  const [ok, setOk] = useState<null | boolean>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus('sending');
+    setLoading(true);
+    setOk(null);
+    setError(null);
 
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          name,
+          company,
+          website,
+          email,
+          message,
+          honeypot: hp,
+        }),
       });
 
-      if (!res.ok) throw new Error('Send failed');
-      setStatus('ok');
-      setForm({ name: '', email: '', message: '', company: '' });
-    } catch {
-      setStatus('error');
+      const data = await res.json();
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || 'Senden fehlgeschlagen');
+      }
+      setOk(true);
+      setName('');
+      setCompany('');
+      setWebsite('');
+      setEmail('');
+      setMessage('');
+      setHp('');
+    } catch (err: any) {
+      setOk(false);
+      setError(err?.message || 'Fehler beim Senden');
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 max-w-xl">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium">Name</label>
-          <input
-            required
-            className="mt-1 w-full rounded-lg border px-3 py-2"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium">E‑Mail</label>
-          <input
-            type="email"
-            required
-            className="mt-1 w-full rounded-lg border px-3 py-2"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </div>
-      </div>
-
-      <div className="hidden">
-        {/* Honeypot-Feld gegen Bots */}
-        <label>Firma</label>
+    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
+      <div className="sm:col-span-1">
+        <label className="mb-1 block text-sm font-medium text-navy">Name*</label>
         <input
-          tabIndex={-1}
-          autoComplete="off"
-          value={form.company}
-          onChange={(e) => setForm({ ...form, company: e.target.value })}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium">Nachricht</label>
-        <textarea
+          className="w-full rounded-lg border px-3 py-2"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
-          rows={5}
-          className="mt-1 w-full rounded-lg border px-3 py-2"
-          value={form.message}
-          onChange={(e) => setForm({ ...form, message: e.target.value })}
         />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="sm:col-span-1">
+        <label className="mb-1 block text-sm font-medium text-navy">E-Mail*</label>
+        <input
+          type="email"
+          className="w-full rounded-lg border px-3 py-2"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="sm:col-span-1">
+        <label className="mb-1 block text-sm font-medium text-navy">Firma</label>
+        <input
+          className="w-full rounded-lg border px-3 py-2"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+        />
+      </div>
+
+      <div className="sm:col-span-1">
+        <label className="mb-1 block text-sm font-medium text-navy">Website</label>
+        <input
+          type="url"
+          className="w-full rounded-lg border px-3 py-2"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          placeholder="https://…"
+        />
+      </div>
+
+      <div className="sm:col-span-2">
+        <label className="mb-1 block text-sm font-medium text-navy">Nachricht*</label>
+        <textarea
+          className="w-full rounded-lg border px-3 py-2"
+          rows={5}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          required
+        />
+      </div>
+
+      {/* honeypot – versteckt für Menschen */}
+      <div className="hidden">
+        <label>Bitte leer lassen</label>
+        <input value={hp} onChange={(e) => setHp(e.target.value)} />
+      </div>
+
+      <div className="sm:col-span-2 flex items-center gap-3">
         <button
-          disabled={status === 'sending'}
-          className="rounded-lg bg-north text-white px-4 py-2 disabled:opacity-60"
+          type="submit"
+          disabled={loading}
+          className="rounded-lg bg-north px-4 py-2 text-white disabled:opacity-50"
         >
-          {status === 'sending' ? 'Senden…' : 'Abschicken'}
+          {loading ? 'Senden…' : 'Senden'}
         </button>
 
-        {status === 'ok' && (
-          <span className="text-sm text-sea">Danke! Deine Nachricht wurde gesendet.</span>
-        )}
-        {status === 'error' && (
-          <span className="text-sm text-coral">Ups – das hat nicht geklappt.</span>
-        )}
+        {ok && <span className="text-sm text-sea">Danke! Nachricht gesendet.</span>}
+        {ok === false && <span className="text-sm text-coral">{error}</span>}
       </div>
     </form>
   );
