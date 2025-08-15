@@ -1,26 +1,22 @@
 "use client";
 
-import { z } from "zod";
 import { useState } from "react";
 
-const schema = z.object({
-  date: z.string().min(1, "Datum erforderlich"),
-  title: z.string().min(3, "Mind. 3 Zeichen"),
-  description: z.string().optional(),
-  area: z.enum([
-    "Frontend",
-    "Backend",
-    "ICS",
-    "Search",
-    "Listings",
-    "Infra",
-    "Docs",
-    "Other",
-  ]),
-  author: z.string().optional(),
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = {
+  date: string;
+  title: string;
+  description?: string;
+  area:
+    | "Frontend"
+    | "Backend"
+    | "ICS"
+    | "Search"
+    | "Listings"
+    | "Infra"
+    | "Docs"
+    | "Other";
+  author?: string;
+};
 
 export default function ChangeForm() {
   const [form, setForm] = useState<FormData>({
@@ -36,16 +32,20 @@ export default function ChangeForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
-    const parsed = schema.safeParse(form);
-    if (!parsed.success) {
-      setMsg(parsed.error.issues[0]?.message ?? "Ungültige Eingabe");
+
+    // einfache Validierung
+    if (!form.title || form.title.trim().length < 3) {
+      setMsg("Mindestens 3 Zeichen für den Titel");
+      return;
+    }
+    if (!form.date) {
+      setMsg("Datum erforderlich");
       return;
     }
 
     setBusy(true);
     try {
       // TODO: echte Persistenz anbinden (API-Route oder Server Action)
-      // Aktuell nur ein freundlicher Hinweis, damit Deploy nie bricht.
       await new Promise((r) => setTimeout(r, 400));
       setMsg(
         "Gespeichert (Demo). Bitte später echte Persistenz via API/DB anbinden."
@@ -90,7 +90,16 @@ export default function ChangeForm() {
               setForm({ ...form, area: e.target.value as FormData["area"] })
             }
           >
-            {schema.shape.area._def.values.map((v) => (
+            {[
+              "Frontend",
+              "Backend",
+              "ICS",
+              "Search",
+              "Listings",
+              "Infra",
+              "Docs",
+              "Other",
+            ].map((v) => (
               <option key={v} value={v}>
                 {v}
               </option>
@@ -102,7 +111,7 @@ export default function ChangeForm() {
           <label className="block text-sm font-medium">Autor</label>
           <input
             className="mt-1 w-full rounded-xl border px-3 py-2"
-            placeholder="z. B. Paul"
+            placeholder="z. B. Paul"
             value={form.author ?? ""}
             onChange={(e) => setForm({ ...form, author: e.target.value })}
           />
