@@ -10,7 +10,7 @@ export default function ContactForm() {
   const [message, setMessage] = useState('');
 
   const [sending, setSending] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,13 +27,21 @@ export default function ContactForm() {
       const data = await res.json().catch(() => ({} as any));
 
       if (!res.ok || !data?.ok) {
-        throw new Error(data?.error || `Fehler ${res.status}`);
+        const msg = data?.error || `Fehler ${res.status}`;
+        throw new Error(msg);
       }
 
-      setNotice('Danke! Wir haben deine Nachricht erhalten.');
-      setName(''); setEmail(''); setCompany(''); setWebsite(''); setMessage('');
+      setNotice({ type: 'ok', text: 'Danke! Wir haben deine Nachricht erhalten.' });
+      setName('');
+      setEmail('');
+      setCompany('');
+      setWebsite('');
+      setMessage('');
     } catch (err: any) {
-      setNotice(`Senden fehlgeschlagen: ${err?.message || 'Unbekannter Fehler'}`);
+      console.error('Kontaktformular Fehler:', err);
+      const msg =
+        err?.message ?? (typeof err === 'string' ? err : 'Unbekannter Fehler');
+      setNotice({ type: 'error', text: `Senden fehlgeschlagen: ${msg}` });
     } finally {
       setSending(false);
     }
@@ -41,73 +49,74 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <label className="block text-sm">
-          <span className="mb-1 block text-navy/70">Name*</span>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium text-navy/80">Name*</label>
           <input
-            required
+            className="mt-1 w-full rounded-lg border px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2"
-            placeholder="Max Mustermann"
-          />
-        </label>
-
-        <label className="block text-sm">
-          <span className="mb-1 block text-navy/70">E‑Mail*</span>
-          <input
             required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-navy/80">E‑Mail*</label>
+          <input
             type="email"
+            className="mt-1 w-full rounded-lg border px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2"
-            placeholder="max@example.com"
+            required
           />
-        </label>
-
-        <label className="block text-sm">
-          <span className="mb-1 block text-navy/70">Firma</span>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-navy/80">Firma</label>
           <input
+            className="mt-1 w-full rounded-lg border px-3 py-2"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2"
-            placeholder="Firma"
           />
-        </label>
-
-        <label className="block text-sm">
-          <span className="mb-1 block text-navy/70">Website</span>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-navy/80">Website</label>
           <input
             type="url"
+            placeholder="https://…"
+            className="mt-1 w-full rounded-lg border px-3 py-2"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2"
-            placeholder="https://…"
           />
-        </label>
+        </div>
       </div>
 
-      <label className="block text-sm">
-        <span className="mb-1 block text-navy/70">Nachricht*</span>
+      <div>
+        <label className="block text-sm font-medium text-navy/80">Nachricht*</label>
         <textarea
-          required
           rows={6}
+          className="mt-1 w-full rounded-lg border px-3 py-2"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="w-full rounded-lg border px-3 py-2"
-          placeholder="Kurz dein Anliegen…"
+          required
         />
-      </label>
+      </div>
 
       <button
         type="submit"
         disabled={sending}
-        className="rounded bg-north px-4 py-2 text-white disabled:opacity-50"
+        className="rounded bg-north px-4 py-2 font-medium text-white shadow-soft disabled:opacity-50"
       >
         {sending ? 'Senden…' : 'Senden'}
       </button>
 
-      {notice && <p className="text-sm">{notice}</p>}
+      {notice && (
+        <p
+          className={`mt-2 text-sm ${
+            notice.type === 'ok' ? 'text-sea' : 'text-coral'
+          }`}
+        >
+          {notice.text}
+        </p>
+      )}
     </form>
   );
 }
