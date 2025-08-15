@@ -12,7 +12,7 @@ type Listing = {
   image: string;
 };
 
-/* --- HostICSBox: ICS prüfen (ruft /api/ics/parse auf) --- */
+/* ---------- Host: ICS-Checker Box ---------- */
 function HostICSBox() {
   const [icsUrl, setIcsUrl] = useState('');
   const [icsText, setIcsText] = useState('');
@@ -28,7 +28,7 @@ function HostICSBox() {
   }>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // gemerkte Eingaben (kleiner UX-Bonus)
+  // ICS-URL im LocalStorage merken (UX)
   useEffect(() => {
     const u = localStorage.getItem('ff_ics_url');
     if (u) setIcsUrl(u);
@@ -48,7 +48,7 @@ function HostICSBox() {
         body: JSON.stringify({
           icsUrl: icsUrl || undefined,
           icsText: icsText || undefined,
-          horizonDays, // Backend kennt das bereits
+          horizonDays,
         }),
       });
       const data = await res.json();
@@ -61,7 +61,6 @@ function HostICSBox() {
     }
   }
 
-  // Client‑seitig nach Mindestnächten filtern
   const filteredWindows =
     result?.windows?.filter((w) => w.length >= minNights) ?? [];
 
@@ -86,7 +85,9 @@ function HostICSBox() {
               max={365}
               className="w-full rounded border px-3 py-2"
               value={horizonDays}
-              onChange={(e) => setHorizonDays(Math.max(7, Math.min(365, Number(e.target.value) || 0)))}
+              onChange={(e) =>
+                setHorizonDays(Math.max(7, Math.min(365, Number(e.target.value) || 0)))
+              }
             />
           </div>
           <div>
@@ -97,7 +98,9 @@ function HostICSBox() {
               max={30}
               className="w-full rounded border px-3 py-2"
               value={minNights}
-              onChange={(e) => setMinNights(Math.max(1, Math.min(30, Number(e.target.value) || 0)))}
+              onChange={(e) =>
+                setMinNights(Math.max(1, Math.min(30, Number(e.target.value) || 0)))
+              }
             />
           </div>
         </div>
@@ -151,70 +154,12 @@ function HostICSBox() {
   );
 }
 
-
-  return (
-    <div className="mt-6 space-y-3 rounded-lg border p-4">
-      <label className="block text-sm font-medium text-navy/80">
-        Kalender‑URL (ICS)
-      </label>
-      <input
-        className="w-full rounded border px-3 py-2"
-        placeholder="https://…/calendar.ics"
-        value={icsUrl}
-        onChange={(e) => setIcsUrl(e.target.value)}
-      />
-
-      <div className="text-sm text-navy/60">oder ICS‑Inhalt einfügen:</div>
-      <textarea
-        rows={6}
-        className="w-full rounded border px-3 py-2"
-        placeholder="BEGIN:VCALENDAR…"
-        value={icsText}
-        onChange={(e) => setIcsText(e.target.value)}
-      />
-
-      <button
-        onClick={handleCheck}
-        disabled={loading || (!icsUrl && !icsText)}
-        className="rounded bg-north px-4 py-2 font-medium text-white disabled:opacity-50"
-      >
-        {loading ? 'Prüfe…' : 'Verfügbarkeit prüfen'}
-      </button>
-
-      {error && <p className="text-sm text-coral">{error}</p>}
-
-      {result && (
-        <div className="mt-3 text-sm">
-          <p className="mb-1 text-navy/80">
-            {result.countEvents} Events gefunden · Horizont: {result.horizonDays} Tage
-          </p>
-          <p className="mb-2">
-            <span className="font-medium">Belegte Tage:</span>{' '}
-            {result.bookedDays.length > 0 ? result.bookedDays.join(', ') : 'keine'}
-          </p>
-          <div>
-            <span className="font-medium">Freie Fenster:</span>
-            <ul className="list-disc pl-5">
-              {result.windows.map((w, i) => (
-                <li key={i}>
-                  ab <strong>{w.start}</strong> für <strong>{w.length}</strong> Nächte
-                </li>
-              ))}
-              {result.windows.length === 0 && <li>keine freien Fenster im Horizont</li>}
-            </ul>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* --- Hauptseite --- */
+/* ---------- Seite ---------- */
 export default function Page() {
   const [tab, setTab] = useState<'guest' | 'host'>('guest');
   const [search, setSearch] = useState('');
 
-  // Hash ↔ Tab synchronisieren (#gaeste / #vermieter)
+  // Hash ↔ Tab (#gaeste / #vermieter) synchronisieren
   useEffect(() => {
     const applyHash = () => {
       const h = typeof window !== 'undefined' ? window.location.hash : '';
@@ -327,7 +272,7 @@ export default function Page() {
               <li>Direktlink zu deiner Buchungsseite</li>
             </ul>
 
-            {/* ← Hier die ICS-Box einbinden */}
+            {/* ICS-Checker */}
             <HostICSBox />
           </section>
         )}
