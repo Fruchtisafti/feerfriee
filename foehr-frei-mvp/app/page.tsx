@@ -154,3 +154,13 @@ export default function Page() {
     </main>
   );
 }
+import ContactForm from '@/components/ContactForm';
+
+// ...innerhalb deines JSX:
+<section id="kontakt" className="mt-16 rounded-xl border bg-white p-6 shadow-soft">
+  <h2 className="text-xl font-semibold text-navy mb-2">Kontakt</h2>
+  <p className="text-navy/70 mb-4">
+    Fragen, Feedback, Interesse als Vermieter? Schreib uns kurz – wir melden uns.
+  </p>
+  <ContactForm />
+</section>
