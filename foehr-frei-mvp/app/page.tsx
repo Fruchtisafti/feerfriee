@@ -9,6 +9,7 @@ type Listing = {
   location: string;
   price: number;
   available: boolean;
+  persons: number;
   image: string;
 };
 
@@ -28,7 +29,6 @@ function HostICSBox() {
   }>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // ICS-URL im LocalStorage merken (UX)
   useEffect(() => {
     const u = localStorage.getItem('ff_ics_url');
     if (u) setIcsUrl(u);
@@ -45,11 +45,7 @@ function HostICSBox() {
       const res = await fetch('/api/ics/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          icsUrl: icsUrl || undefined,
-          icsText: icsText || undefined,
-          horizonDays,
-        }),
+        body: JSON.stringify({ icsUrl: icsUrl || undefined, icsText: icsText || undefined, horizonDays }),
       });
       const data = await res.json();
       if (!res.ok || !data?.ok) throw new Error(data?.error || `Fehler ${res.status}`);
@@ -61,8 +57,7 @@ function HostICSBox() {
     }
   }
 
-  const filteredWindows =
-    result?.windows?.filter((w) => w.length >= minNights) ?? [];
+  const filteredWindows = result?.windows?.filter((w) => w.length >= minNights) ?? [];
 
   return (
     <div className="mt-6 space-y-3 rounded-lg border p-4">
@@ -85,9 +80,7 @@ function HostICSBox() {
               max={365}
               className="w-full rounded border px-3 py-2"
               value={horizonDays}
-              onChange={(e) =>
-                setHorizonDays(Math.max(7, Math.min(365, Number(e.target.value) || 0)))
-              }
+              onChange={(e) => setHorizonDays(Math.max(7, Math.min(365, Number(e.target.value) || 0)))}
             />
           </div>
           <div>
@@ -98,9 +91,7 @@ function HostICSBox() {
               max={30}
               className="w-full rounded border px-3 py-2"
               value={minNights}
-              onChange={(e) =>
-                setMinNights(Math.max(1, Math.min(30, Number(e.target.value) || 0)))
-              }
+              onChange={(e) => setMinNights(Math.max(1, Math.min(30, Number(e.target.value) || 0)))}
             />
           </div>
         </div>
@@ -143,9 +134,7 @@ function HostICSBox() {
                   ab <strong>{w.start}</strong> für <strong>{w.length}</strong> Nächte
                 </li>
               ))}
-              {filteredWindows.length === 0 && (
-                <li>keine freien Fenster im gewählten Horizont</li>
-              )}
+              {filteredWindows.length === 0 && <li>keine freien Fenster im gewählten Horizont</li>}
             </ul>
           </div>
         </div>
@@ -157,7 +146,14 @@ function HostICSBox() {
 /* ---------- Seite ---------- */
 export default function Page() {
   const [tab, setTab] = useState<'guest' | 'host'>('guest');
+
+  // Filter-State
   const [search, setSearch] = useState('');
+  const [onlyFree, setOnlyFree] = useState(false);
+  const [maxPrice, setMaxPrice] = useState<number | ''>('');
+  const [minPersons, setMinPersons] = useState<number | ''>('');
+  const [location, setLocation] = useState<string>('Alle Orte');
+  const [sortBy, setSortBy] = useState<'price_asc' | 'price_desc' | 'title_asc'>('price_asc');
 
   // Hash ↔ Tab (#gaeste / #vermieter) synchronisieren
   useEffect(() => {
@@ -171,25 +167,63 @@ export default function Page() {
     return () => window.removeEventListener('hashchange', applyHash);
   }, []);
 
-  // Demo-Listings
+  // Demo-Listings (jetzt mit persons)
   const listings: Listing[] = useMemo(
     () => [
-      { id: 1, title: 'Nordseeperle', location: 'Wyk auf Föhr', price: 120, available: true,  image: 'https://picsum.photos/seed/foehr1/800/600' },
-      { id: 2, title: 'Dünenblick',   location: 'Nieblum',      price: 95,  available: false, image: 'https://picsum.photos/seed/foehr2/800/600' },
-      { id: 3, title: 'Inseltraum',   location: 'Utersum',      price: 150, available: true,  image: 'https://picsum.photos/seed/foehr3/800/600' },
+      { id: 1, title: 'Nordseeperle', location: 'Wyk auf Föhr', price: 120, available: true,  persons: 3, image: 'https://picsum.photos/seed/foehr1/800/600' },
+      { id: 2, title: 'Dünenblick',   location: 'Nieblum',      price: 95,  available: false, persons: 2, image: 'https://picsum.photos/seed/foehr2/800/600' },
+      { id: 3, title: 'Inseltraum',   location: 'Utersum',      price: 150, available: true,  persons: 5, image: 'https://picsum.photos/seed/foehr3/800/600' },
     ],
     []
   );
 
-  const filtered = useMemo(
-    () =>
-      listings.filter(
-        (l) =>
-          l.title.toLowerCase().includes(search.toLowerCase()) ||
-          l.location.toLowerCase().includes(search.toLowerCase())
-      ),
-    [listings, search]
-  );
+  const locations = useMemo(() => {
+    const set = new Set(listings.map(l => l.location));
+    return ['Alle Orte', ...Array.from(set)];
+  }, [listings]);
+
+  // Filter + Sortierung
+  const filtered = useMemo(() => {
+    let arr = listings.filter((l) => {
+      if (onlyFree && !l.available) return false;
+      if (maxPrice !== '' && l.price > maxPrice) return false;
+      if (minPersons !== '' && l.persons < minPersons) return false;
+      if (location !== 'Alle Orte' && l.location !== location) return false;
+      if (search) {
+        const s = search.toLowerCase();
+        if (!l.title.toLowerCase().includes(s) && !l.location.toLowerCase().includes(s)) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    arr = arr.sort((a, b) => {
+      switch (sortBy) {
+        case 'price_asc': return a.price - b.price;
+        case 'price_desc': return b.price - a.price;
+        case 'title_asc': return a.title.localeCompare(b.title, 'de');
+      }
+    });
+
+    return arr;
+  }, [listings, onlyFree, maxPrice, minPersons, location, search, sortBy]);
+
+  const activeFilters =
+    (onlyFree ? 1 : 0) +
+    (maxPrice !== '' ? 1 : 0) +
+    (minPersons !== '' ? 1 : 0) +
+    (location !== 'Alle Orte' ? 1 : 0) +
+    (search ? 1 : 0);
+
+  const resetFilters = () => {
+    setSearch('');
+    setOnlyFree(false);
+    setMaxPrice('');
+    setMinPersons('');
+    setLocation('Alle Orte');
+    setSortBy('price_asc');
+  };
 
   const setHash = (hash: '#gaeste' | '#vermieter') => {
     if (typeof window !== 'undefined') window.history.replaceState(null, '', hash);
@@ -220,45 +254,105 @@ export default function Page() {
 
         {tab === 'guest' ? (
           <>
-            {/* Suche */}
-            <div className="mb-6 flex gap-2">
-              <input
-                type="text"
-                placeholder="Suche nach Ort oder Name"
-                className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-north/40"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <button
-                onClick={() => setSearch('')}
-                className="rounded-lg border bg-white px-3 py-2 hover:bg-cloud"
-              >
-                Reset
-              </button>
+            {/* Filters */}
+            <div className="mb-4 grid gap-3 md:grid-cols-12">
+              <div className="md:col-span-3">
+                <input
+                  type="text"
+                  placeholder="Suche (Ort/Name)"
+                  className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-north/40"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="md:col-span-3">
+                <select
+                  className="w-full rounded-lg border px-3 py-2"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                >
+                  {locations.map((loc) => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Min. Personen"
+                  className="w-full rounded-lg border px-3 py-2"
+                  value={minPersons}
+                  onChange={(e) => setMinPersons(e.target.value === '' ? '' : Number(e.target.value))}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Max. Preis (€)"
+                  className="w-full rounded-lg border px-3 py-2"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <select
+                  className="w-full rounded-lg border px-3 py-2"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                >
+                  <option value="price_asc">Preis ↑</option>
+                  <option value="price_desc">Preis ↓</option>
+                  <option value="title_asc">Name A–Z</option>
+                </select>
+              </div>
+              <div className="md:col-span-12 flex items-center justify-between">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={onlyFree}
+                    onChange={(e) => setOnlyFree(e.target.checked)}
+                  />
+                  Nur freie zeigen
+                </label>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-navy/70">
+                    {filtered.length} Treffer {activeFilters > 0 && <>(Filter aktiv: {activeFilters})</>}
+                  </span>
+                  <button onClick={resetFilters} className="rounded-lg border bg-white px-3 py-2 hover:bg-cloud">
+                    Zurücksetzen
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Listings */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((l) => (
-                <article key={l.id} className="overflow-hidden rounded-xl border bg-white shadow-soft">
-                  <img src={l.image} alt={l.title} className="h-40 w-full object-cover" />
-                  <div className="flex flex-col gap-2 p-4">
-                    <h2 className="text-lg font-semibold text-navy">{l.title}</h2>
-                    <p className="text-sm text-navy/70">{l.location}</p>
-                    <div className="mt-auto flex items-center justify-between">
-                      <span className="font-bold text-north">{l.price} €</span>
-                      <span
-                        className={`rounded px-2 py-1 text-xs font-medium ${
+            {filtered.length === 0 ? (
+              <div className="rounded-xl border bg-white p-6 text-navy/70">
+                Keine Ergebnisse. Passen Sie die Filter an.
+              </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {filtered.map((l) => (
+                  <article key={l.id} className="overflow-hidden rounded-xl border bg-white shadow-soft">
+                    <img src={l.image} alt={l.title} className="h-40 w-full object-cover" />
+                    <div className="flex flex-col gap-2 p-4">
+                      <h2 className="text-lg font-semibold text-navy">{l.title}</h2>
+                      <p className="text-sm text-navy/70">{l.location} · bis {l.persons} Pers.</p>
+                      <div className="mt-auto flex items-center justify-between">
+                        <span className="font-bold text-north">{l.price} €</span>
+                        <span className={`rounded px-2 py-1 text-xs font-medium ${
                           l.available ? 'bg-sea/10 text-sea' : 'bg-coral/10 text-coral'
-                        }`}
-                      >
-                        {l.available ? 'Frei' : 'Belegt'}
-                      </span>
+                        }`}>
+                          {l.available ? 'Frei' : 'Belegt'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </>
         ) : (
           <section id="vermieter" className="rounded-xl border bg-white p-6 shadow-soft">
