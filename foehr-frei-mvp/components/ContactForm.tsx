@@ -4,128 +4,110 @@ import { useState } from 'react';
 
 export default function ContactForm() {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
   const [website, setWebsite] = useState('');
-  const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  // Honeypot (hidden)
-  const [hp, setHp] = useState('');
 
-  const [loading, setLoading] = useState(false);
-  const [ok, setOk] = useState<null | boolean>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  async function submit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setOk(null);
-    setError(null);
+    setSending(true);
+    setNotice(null);
 
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          company,
-          website,
-          email,
-          message,
-          honeypot: hp,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, company, website, message }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({} as any));
+
       if (!res.ok || !data?.ok) {
-        throw new Error(data?.error || 'Senden fehlgeschlagen');
+        throw new Error(data?.error || `Fehler ${res.status}`);
       }
-      setOk(true);
-      setName('');
-      setCompany('');
-      setWebsite('');
-      setEmail('');
-      setMessage('');
-      setHp('');
+
+      setNotice('Danke! Wir haben deine Nachricht erhalten.');
+      setName(''); setEmail(''); setCompany(''); setWebsite(''); setMessage('');
     } catch (err: any) {
-      setOk(false);
-      setError(err?.message || 'Fehler beim Senden');
+      setNotice(`Senden fehlgeschlagen: ${err?.message || 'Unbekannter Fehler'}`);
     } finally {
-      setLoading(false);
+      setSending(false);
     }
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
-      <div className="sm:col-span-1">
-        <label className="mb-1 block text-sm font-medium text-navy">Name*</label>
-        <input
-          className="w-full rounded-lg border px-3 py-2"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label className="block text-sm">
+          <span className="mb-1 block text-navy/70">Name*</span>
+          <input
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-lg border px-3 py-2"
+            placeholder="Max Mustermann"
+          />
+        </label>
+
+        <label className="block text-sm">
+          <span className="mb-1 block text-navy/70">E‑Mail*</span>
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-lg border px-3 py-2"
+            placeholder="max@example.com"
+          />
+        </label>
+
+        <label className="block text-sm">
+          <span className="mb-1 block text-navy/70">Firma</span>
+          <input
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            className="w-full rounded-lg border px-3 py-2"
+            placeholder="Firma"
+          />
+        </label>
+
+        <label className="block text-sm">
+          <span className="mb-1 block text-navy/70">Website</span>
+          <input
+            type="url"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            className="w-full rounded-lg border px-3 py-2"
+            placeholder="https://…"
+          />
+        </label>
       </div>
 
-      <div className="sm:col-span-1">
-        <label className="mb-1 block text-sm font-medium text-navy">E-Mail*</label>
-        <input
-          type="email"
-          className="w-full rounded-lg border px-3 py-2"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-      </div>
-
-      <div className="sm:col-span-1">
-        <label className="mb-1 block text-sm font-medium text-navy">Firma</label>
-        <input
-          className="w-full rounded-lg border px-3 py-2"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-        />
-      </div>
-
-      <div className="sm:col-span-1">
-        <label className="mb-1 block text-sm font-medium text-navy">Website</label>
-        <input
-          type="url"
-          className="w-full rounded-lg border px-3 py-2"
-          value={website}
-          onChange={(e) => setWebsite(e.target.value)}
-          placeholder="https://…"
-        />
-      </div>
-
-      <div className="sm:col-span-2">
-        <label className="mb-1 block text-sm font-medium text-navy">Nachricht*</label>
+      <label className="block text-sm">
+        <span className="mb-1 block text-navy/70">Nachricht*</span>
         <textarea
-          className="w-full rounded-lg border px-3 py-2"
-          rows={5}
+          required
+          rows={6}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          required
+          className="w-full rounded-lg border px-3 py-2"
+          placeholder="Kurz dein Anliegen…"
         />
-      </div>
+      </label>
 
-      {/* honeypot – versteckt für Menschen */}
-      <div className="hidden">
-        <label>Bitte leer lassen</label>
-        <input value={hp} onChange={(e) => setHp(e.target.value)} />
-      </div>
+      <button
+        type="submit"
+        disabled={sending}
+        className="rounded bg-north px-4 py-2 text-white disabled:opacity-50"
+      >
+        {sending ? 'Senden…' : 'Senden'}
+      </button>
 
-      <div className="sm:col-span-2 flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-north px-4 py-2 text-white disabled:opacity-50"
-        >
-          {loading ? 'Senden…' : 'Senden'}
-        </button>
-
-        {ok && <span className="text-sm text-sea">Danke! Nachricht gesendet.</span>}
-        {ok === false && <span className="text-sm text-coral">{error}</span>}
-      </div>
+      {notice && <p className="text-sm">{notice}</p>}
     </form>
   );
 }
