@@ -12,25 +12,37 @@ export default function HomePage() {
   const tab = useActiveTab();
   const [filtered, setFiltered] = useState<Listing[]>(LISTINGS);
   const [active, setActive] = useState<Filters>({
-    q: "", min: "", max: "", onlyFree: false, location: "",
+    q: "",
+    min: "",
+    max: "",
+    onlyFree: false,
+    location: "",
   });
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="mb-2 text-3xl font-bold">Föhrfrei</h1>
-      <p className="mb-6 text-gray-600">Finde freie Unterkünfte – oder veröffentliche deine Deals per ICS.</p>
+      <p className="mb-6 text-gray-600">
+        Finde freie Unterkünfte – oder veröffentliche deine Deals per ICS.
+      </p>
 
+      {/* Tabs zum Umschalten */}
       <RoleTabs />
 
       {tab === "mieter" && (
         <>
+          {/* Filterbox */}
           <div className="mb-4 rounded-2xl border p-4">
             <SearchFilters
               data={LISTINGS}
-              onChange={(res, f) => { setFiltered(res); setActive(f); }}
+              onChange={(res, f) => {
+                setFiltered(res);
+                setActive(f);
+              }}
             />
           </div>
 
+          {/* Infozeile zu Treffern */}
           <div className="mb-4 text-sm text-gray-600">
             {filtered.length} Ergebnis{filtered.length === 1 ? "" : "se"} ·
             &nbsp;Filter: {active.q || "—"} · {active.location || "alle Orte"} ·{" "}
@@ -39,10 +51,14 @@ export default function HomePage() {
             {active.onlyFree ? "nur frei" : "alle"}
           </div>
 
+          {/* Cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((it) => <ListingCard key={it.id} item={it} />)}
+            {filtered.map((it) => (
+              <ListingCard key={it.id} item={it} />
+            ))}
           </div>
 
+          {/* Keine Ergebnisse */}
           {filtered.length === 0 && (
             <div className="mt-8 rounded-xl border p-6 text-center">
               Keine Treffer. Passe deine Filter an.
@@ -54,7 +70,7 @@ export default function HomePage() {
       {tab === "vermieter" && (
         <div className="grid gap-4">
           <HostICSBox />
-          {/* Platz für weitere Vermieter-Funktionen */}
+          {/* Hier können weitere Vermieter-Features hin */}
         </div>
       )}
     </main>
