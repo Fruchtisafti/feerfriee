@@ -6,7 +6,7 @@ import { Listing } from "@/lib/listings";
 
 export default function ListingCard({ item }: { item: Listing }) {
   return (
-    <div className="rounded-2xl border p-4 shadow-sm hover:shadow-md transition">
+ <div className="rounded-2xl border p-4 shadow-sm hover:shadow-md transition-all duration-200">
       <div className="relative w-full h-40 mb-3 overflow-hidden rounded-xl bg-gray-100">
         {/* Platzhalter-Bild falls kein echtes vorhanden */}
         <Image
