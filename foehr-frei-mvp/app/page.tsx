@@ -1,138 +1,103 @@
 // app/page.tsx
-"use client";
+'use client';
 
-import { Suspense, useEffect, useState } from "react";
-import RoleTabs, { useActiveTab } from "@/components/RoleTabs";
-import { LISTINGS, type Listing } from "@/lib/listings";
-import SearchFilters, { type Filters } from "@/components/SearchFilters";
-import ListingCard from "@/components/ListingCard";
-import HostICSBox from "@/components/HostICSBox";
+import { useEffect, useMemo, useState, Suspense } from 'react';
+import RoleTabs, { useActiveTab } from '@/components/RoleTabs';
+import SearchFilters, { type Filters } from '@/components/SearchFilters';
+import ListingCard from '@/components/ListingCard';
+import HostICSBox from '@/components/HostICSBox';
+import { LISTINGS, type Listing } from '@/lib/listings';
 
-/** Einfache Cookie-Banner Komponente (im selben File)
- *  - zeigt sich nur, wenn noch nicht akzeptiert
- *  - speichert Zustimmung in localStorage ("cookieConsent" = "accepted")
- */
+type Tab = 'gast' | 'vermieter';
 
-  useEffect(() => {
-    try {
-      const ok = typeof window !== "undefined" && localStorage.getItem("cookieConsent") === "accepted";
-      setVisible(!ok);
-    } catch {
-      setVisible(true);
-    }
-  }, []);
-
-  if (!visible) return null;
-
+export default function Page() {
   return (
-    <div className="fixed bottom-4 inset-x-4 z-50 rounded-2xl border p-4 bg-white shadow-lg flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm text-gray-700">
-        Wir verwenden Cookies, um Funktionen bereitzustellen und die Nutzung zu analysieren.
-        Mit Klick auf „Akzeptieren“ stimmst du dem zu.
-      </p>
-      <div className="flex gap-2">
-        <button
-          onClick={() => {
-            try { localStorage.setItem("cookieConsent", "accepted"); } catch {}
-            setVisible(false);
-          }}
-          className="rounded-xl px-4 py-2 bg-black text-white hover:bg-gray-800 border border-black/10"
-        >
-          Akzeptieren
-        </button>
-        {/* Optional: Link zur Datenschutzerklärung */}
-        <a
-          href="/datenschutz"
-          className="rounded-xl px-4 py-2 border hover:bg-gray-50 text-sm"
-        >
-          Mehr erfahren
-        </a>
-      </div>
-    </div>
+    // Suspense nur als Schutz falls Unterkomponenten lazy laden
+    <Suspense fallback={<div className="text-sm text-navy/70">Lade…</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
 
-export default function HomePage() {
-  return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-2 text-3xl font-bold">Föhrfrei</h1>
-      <p className="mb-6 text-gray-600">
-        Finde freie Unterkünfte – oder veröffentliche deine Deals per ICS.
-      </p>
+function HomeContent() {
+  const tab = useActiveTab() as Tab; // kommt aus RoleTabs (gast | vermieter)
 
-      {/* Wichtig: alles was useSearchParams nutzt, in Suspense wrappen */}
-      <Suspense fallback={<div className="mb-4 h-10 w-40 rounded-xl bg-gray-100" />}>
-        <HomeInner />
-      </Suspense>
-
-      {/* Cookie-Banner ganz unten auf der Seite */}
-      <CookieBanner />
-    </main>
-  );
-}
-
-function HomeInner() {
-  const tab = useActiveTab();
-  const [filtered, setFiltered] = useState<Listing[]>(LISTINGS);
-  const [active, setActive] = useState<Filters>({
-    q: "",
-    min: "",
-    max: "",
-    onlyFree: false,
-    location: "",
-    sort: "none",
+  // --- Filter-Status ---
+  const [filters, setFilters] = useState<Filters>({
+    query: '',
+    onlyAvailable: true,
+    maxPrice: undefined,
+    location: 'alle',
   });
 
+  // --- Gefilterte Listings ---
+  const filtered = useMemo(() => {
+    const q = filters.query?.trim().toLowerCase() ?? '';
+    return LISTINGS.filter((l: Listing) => {
+      if (filters.onlyAvailable && !l.available) return false;
+      if (typeof filters.maxPrice === 'number' && l.price > filters.maxPrice) return false;
+      if (filters.location && filters.location !== 'alle' && l.location.toLowerCase() !== filters.location.toLowerCase()) return false;
+      if (q) {
+        const hay =
+          `${l.title} ${l.location} ${l.price} ${l.available ? 'frei' : 'belegt'}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [filters]);
+
+  // Mini UX: Scroll nach oben, wenn Tab wechselt
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {}
+  }, [tab]);
+
   return (
-    <>
-      {/* Tabs: Mieter / Vermieter */}
+    <div className="space-y-6">
+      {/* Rollenwahl */}
       <RoleTabs />
 
-      {tab === "mieter" && (
+      {tab === 'gast' && (
         <>
-          {/* Filterbox – leichte UI-Politur */}
-          <div className="mb-5 rounded-2xl border p-4 bg-white/60 backdrop-blur">
-            <SearchFilters
-              data={LISTINGS}
-              onChange={(res, f) => {
-                setFiltered(res);
-                setActive(f);
-              }}
-            />
-          </div>
+          {/* Suche/Filter */}
+          <SearchFilters value={filters} onChange={setFilters} />
 
-          {/* Infozeile */}
-          <div className="mb-4 text-sm text-gray-500 italic">
-            {filtered.length} Ergebnis{filtered.length === 1 ? "" : "se"} ·{" "}
-            Filter: {active.q || "—"} · {active.location || "alle Orte"} ·{" "}
-            {active.min !== "" ? `ab ${active.min}€` : "kein Min"} ·{" "}
-            {active.max !== "" ? `bis ${active.max}€` : "kein Max"} ·{" "}
-            {active.onlyFree ? "nur frei" : "alle"} ·{" "}
-            Sort: {active.sort && active.sort !== "none" ? active.sort : "—"}
-          </div>
-
-          {/* Karten */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((it) => (
-              <ListingCard key={it.id} item={it} />
+          {/* Ergebnisliste */}
+          <section aria-label="Ergebnisse" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((l) => (
+              <ListingCard key={l.id} listing={l} />
             ))}
-          </div>
 
-          {/* Keine Treffer */}
-          {filtered.length === 0 && (
-            <div className="mt-8 rounded-xl border p-6 text-center">
-              Keine Treffer. Passe deine Filter an.
-            </div>
-          )}
+            {filtered.length === 0 && (
+              <div className="col-span-full rounded-2xl border p-6 text-sm text-navy/70 bg-white/70">
+                Keine Treffer. Tipp: Filter lockern oder Suchbegriff ändern.
+              </div>
+            )}
+          </section>
         </>
       )}
 
-      {tab === "vermieter" && (
-        <div className="grid gap-4">
-          <HostICSBox />
-          {/* Platz für weitere Vermieter-Features */}
-        </div>
+      {tab === 'vermieter' && (
+        <>
+          {/* Hinweisbox für Vermieter – NICHT fixed! */}
+          <section className="rounded-2xl border p-4 shadow-sm bg-white/80">
+            <h2 className="text-base font-semibold mb-2">ICS‑Schnittstelle (Beta)</h2>
+            <p className="text-sm text-navy/70 mb-3">
+              Trage hier deinen Kalender (ICS) ein. Wir lesen nur Verfügbarkeiten aus.
+            </p>
+            <HostICSBox />
+          </section>
+
+          {/* Optional: kleine öffentliche Übersicht der letzten ICS-Deals */}
+          <section className="rounded-2xl border p-4 bg-white/70">
+            <h3 className="text-sm font-medium mb-2">Kleine ICS‑Deals‑Liste (öffentlich)</h3>
+            <p className="text-xs text-navy/60">
+              (Platzhalter) Hier können später die letzten freien Zeiträume aus ICS‑Kalendern stehen.
+            </p>
+          </section>
+        </>
       )}
-    </>
+    </div>
   );
 }
