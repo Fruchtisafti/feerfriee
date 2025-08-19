@@ -10,7 +10,7 @@ export default function ListingCard({ item }: { item: Listing }) {
       <div className="relative w-full h-40 mb-3 overflow-hidden rounded-xl bg-gray-100">
         {/* Platzhalter-Bild falls kein echtes vorhanden */}
         <Image
-          src={item.image || "/placeholder.png"}
+          src={item.image || "/placeholder.jpg"}   // 👉 auf .jpg vereinheitlicht
           alt={item.title}
           fill
           className="object-cover"
