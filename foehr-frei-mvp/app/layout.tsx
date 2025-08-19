@@ -1,4 +1,3 @@
-import "./globals.css";
 // app/layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
@@ -41,8 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </footer>
 
-        {/* Nur laden, wenn zugestimmt wurde */}
+        {/* Lädt nur Tracking, wenn im Component selbst Consent == 'granted' geprüft wird */}
         <Analytics />
+
         {/* Banner zeigt sich nur, wenn noch keine Entscheidung gespeichert ist */}
         <ConsentBanner />
       </body>
