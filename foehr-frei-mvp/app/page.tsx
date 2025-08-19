@@ -1,12 +1,58 @@
 // app/page.tsx
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import RoleTabs, { useActiveTab } from "@/components/RoleTabs";
 import { LISTINGS, type Listing } from "@/lib/listings";
 import SearchFilters, { type Filters } from "@/components/SearchFilters";
 import ListingCard from "@/components/ListingCard";
 import HostICSBox from "@/components/HostICSBox";
+
+/** Einfache Cookie-Banner Komponente (im selben File)
+ *  - zeigt sich nur, wenn noch nicht akzeptiert
+ *  - speichert Zustimmung in localStorage ("cookieConsent" = "accepted")
+ */
+function CookieBanner() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    try {
+      const ok = typeof window !== "undefined" && localStorage.getItem("cookieConsent") === "accepted";
+      setVisible(!ok);
+    } catch {
+      setVisible(true);
+    }
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed bottom-4 inset-x-4 z-50 rounded-2xl border p-4 bg-white shadow-lg flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-gray-700">
+        Wir verwenden Cookies, um Funktionen bereitzustellen und die Nutzung zu analysieren.
+        Mit Klick auf „Akzeptieren“ stimmst du dem zu.
+      </p>
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            try { localStorage.setItem("cookieConsent", "accepted"); } catch {}
+            setVisible(false);
+          }}
+          className="rounded-xl px-4 py-2 bg-black text-white hover:bg-gray-800 border border-black/10"
+        >
+          Akzeptieren
+        </button>
+        {/* Optional: Link zur Datenschutzerklärung */}
+        <a
+          href="/datenschutz"
+          className="rounded-xl px-4 py-2 border hover:bg-gray-50 text-sm"
+        >
+          Mehr erfahren
+        </a>
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   return (
@@ -20,6 +66,9 @@ export default function HomePage() {
       <Suspense fallback={<div className="mb-4 h-10 w-40 rounded-xl bg-gray-100" />}>
         <HomeInner />
       </Suspense>
+
+      {/* Cookie-Banner ganz unten auf der Seite */}
+      <CookieBanner />
     </main>
   );
 }
