@@ -1,44 +1,47 @@
-"use client";
+// components/RoleTabs.tsx
+'use client';
 
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 
-const TABS = [
-  { key: "mieter", label: "Mieter" },
-  { key: "vermieter", label: "Vermieter" },
-];
+export type RoleTab = 'gast' | 'vermieter';
 
-export default function RoleTabs() {
+export function useActiveTab(): RoleTab {
   const sp = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const active = sp.get("tab") === "vermieter" ? "vermieter" : "mieter";
+  const raw = sp.get('tab')?.toLowerCase();
 
-  function setTab(tab: string) {
-    const p = new URLSearchParams(sp);
-    p.set("tab", tab);
-    router.push(`${pathname}?${p.toString()}`);
-  }
-
-  return (
-    <div className="mb-4 flex gap-2">
-      {TABS.map((t) => (
-        <button
-          key={t.key}
-          onClick={() => setTab(t.key)}
-          className={`rounded-xl border px-4 py-2 transition ${
-            active === t.key
-              ? "bg-black text-white"
-              : "bg-white hover:bg-gray-50"
-          }`}
-        >
-          {t.label}
-        </button>
-      ))}
-    </div>
-  );
+  // Synonyme und Fallbacks:
+  if (raw === 'vermieter' || raw === 'host') return 'vermieter';
+  // "mieter" ist dasselbe wie "gast"
+  return 'gast';
 }
 
-export function useActiveTab() {
-  const sp = useSearchParams();
-  return sp.get("tab") === "vermieter" ? "vermieter" : "mieter";
+export default function RoleTabs() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const active = useActiveTab();
+
+  const makeHref = (tab: RoleTab) => {
+    const sp = new URLSearchParams(searchParams.toString());
+    sp.set('tab', tab);
+    return `${pathname}?${sp.toString()}`;
+  };
+
+  const base =
+    'px-4 py-2 rounded-xl border text-sm transition';
+  const activeCls =
+    'bg-north text-white shadow-soft border-north';
+  const inactiveCls =
+    'bg-white hover:bg-cloud/60 border-cloud text-navy';
+
+  return (
+    <div className="flex gap-2">
+      <Link href={makeHref('gast')} className={`${base} ${active === 'gast' ? activeCls : inactiveCls}`}>
+        Gäste (Mieter)
+      </Link>
+      <Link href={makeHref('vermieter')} className={`${base} ${active === 'vermieter' ? activeCls : inactiveCls}`}>
+        Vermieter
+      </Link>
+    </div>
+  );
 }
