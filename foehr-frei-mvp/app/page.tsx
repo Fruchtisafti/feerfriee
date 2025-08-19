@@ -12,8 +12,6 @@ import HostICSBox from "@/components/HostICSBox";
  *  - zeigt sich nur, wenn noch nicht akzeptiert
  *  - speichert Zustimmung in localStorage ("cookieConsent" = "accepted")
  */
-function CookieBanner() {
-  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     try {
