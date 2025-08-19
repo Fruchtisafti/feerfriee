@@ -16,7 +16,7 @@ export default function HomePage() {
         Finde freie Unterkünfte – oder veröffentliche deine Deals per ICS.
       </p>
 
-      {/* WICHTIG: Alles, was useSearchParams nutzt, in Suspense */}
+      {/* Wichtig: alles was useSearchParams nutzt, in Suspense wrappen */}
       <Suspense fallback={<div className="mb-4 h-10 w-40 rounded-xl bg-gray-100" />}>
         <HomeInner />
       </Suspense>
@@ -33,15 +33,18 @@ function HomeInner() {
     max: "",
     onlyFree: false,
     location: "",
+    sort: "none",
   });
 
   return (
     <>
+      {/* Tabs: Mieter / Vermieter */}
       <RoleTabs />
 
       {tab === "mieter" && (
         <>
-          <div className="mb-4 rounded-2xl border p-4">
+          {/* Filterbox – leichte UI-Politur */}
+          <div className="mb-5 rounded-2xl border p-4 bg-white/60 backdrop-blur">
             <SearchFilters
               data={LISTINGS}
               onChange={(res, f) => {
@@ -51,20 +54,24 @@ function HomeInner() {
             />
           </div>
 
-          <div className="mb-4 text-sm text-gray-600">
+          {/* Infozeile */}
+          <div className="mb-4 text-sm text-gray-500 italic">
             {filtered.length} Ergebnis{filtered.length === 1 ? "" : "se"} ·{" "}
             Filter: {active.q || "—"} · {active.location || "alle Orte"} ·{" "}
             {active.min !== "" ? `ab ${active.min}€` : "kein Min"} ·{" "}
             {active.max !== "" ? `bis ${active.max}€` : "kein Max"} ·{" "}
-            {active.onlyFree ? "nur frei" : "alle"}
+            {active.onlyFree ? "nur frei" : "alle"} ·{" "}
+            Sort: {active.sort && active.sort !== "none" ? active.sort : "—"}
           </div>
 
+          {/* Karten */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((it) => (
               <ListingCard key={it.id} item={it} />
             ))}
           </div>
 
+          {/* Keine Treffer */}
           {filtered.length === 0 && (
             <div className="mt-8 rounded-xl border p-6 text-center">
               Keine Treffer. Passe deine Filter an.
@@ -76,6 +83,7 @@ function HomeInner() {
       {tab === "vermieter" && (
         <div className="grid gap-4">
           <HostICSBox />
+          {/* Platz für weitere Vermieter-Features */}
         </div>
       )}
     </>
