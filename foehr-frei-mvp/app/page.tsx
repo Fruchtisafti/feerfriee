@@ -19,7 +19,7 @@ export default function Page() {
 }
 
 function HomeContent() {
-  const tab = useActiveTab() as Tab;
+ const tab = useActiveTab();
 
   // Orte aus Daten ableiten (für Dropdown)
   const allLocations = useMemo(() => {
