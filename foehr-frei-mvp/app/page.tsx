@@ -72,7 +72,7 @@ function HomeContent() {
     return res;
   }, [filters]);
 
-  // Beim Tabwechsel nach oben scrollen (kleines UX-Plus)
+  // Beim Tabwechsel nach oben scrollen
   useEffect(() => {
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
   }, [tab]);
@@ -87,7 +87,7 @@ function HomeContent() {
 
           <section aria-label="Ergebnisse" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((l: Listing) => (
-              <ListingCard key={l.id} listing={l} />
+              <ListingCard key={l.id} item={l} />
             ))}
 
             {filtered.length === 0 && (
@@ -101,7 +101,7 @@ function HomeContent() {
 
       {tab === 'vermieter' && (
         <section className="rounded-2xl border p-4 shadow-sm bg-white/80">
-          <h2 className="text-base font-semibold mb-2">ICS‑Schnittstelle (Beta)</h2>
+          <h2 className="text-base font-semibold mb-2">ICS-Schnittstelle (Beta)</h2>
           <p className="text-sm text-navy/70 mb-3">
             Trage hier deinen Kalender (ICS) ein. Wir lesen nur Verfügbarkeiten aus.
           </p>
